@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pokédex TCG Wishlist</title>
+    <link rel="stylesheet" href="style.css">
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+</head>
+
+<body>
+
+    <header class="app-header">
+        <img src="image.png" alt="Pokémon Pokédex TCG Wishlist" class="header-image" data-cy="app-logo">
+    </header>
+
+    <div class="controls-bar">
+        <select id="region-filter" class="custom-select" data-cy="region-filter" onchange="changeRegion(this.value)">
+            <option value="all">All Regions (1-1025)</option>
+            <option value="kanto">Kanto (1-151)</option>
+            <option value="johto">Johto (152-251)</option>
+            <option value="hoenn">Hoenn (252-386)</option>
+            <option value="sinnoh">Sinnoh (387-493)</option>
+            <option value="unova">Unova (494-649)</option>
+            <option value="kalos">Kalos (650-721)</option>
+            <option value="alola">Alola (722-809)</option>
+            <option value="galar">Galar (810-905)</option>
+            <option value="paldea">Paldea (906-1025)</option>
+        </select>
+
+        <div class="action-buttons">
+            <button class="clear-btn" data-cy="btn-clear-all" onclick="clearWishlist()">🗑️ Clear All</button>
+            <button class="export-btn" data-cy="btn-export-pdf" onclick="exportToPDF()">📄 Export PDF</button>
+        </div>
+    </div>
+
+    <div class="rarity-filters">
+        <p>Rarity Filters (Select to display on hover):</p>
+        <div class="checkbox-grid" data-cy="rarity-checkboxes">
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='(rarity:"Promo" OR subtypes:"Promo" OR set.name:"*Promo*")' checked
+                    onchange="changeFilter()"> Promos</label>
+
+            <label class="checkbox-label">
+                <input type="checkbox" class="rarity-cb"
+                    value='rarity:"Hyper Rare" OR rarity:"Secret Rare" OR rarity:"Rare Secret"' checked
+                    onchange="changeFilter()">
+                ★★★ Hyper Rare (Gold)
+            </label>
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='rarity:"Special Illustration Rare"' checked onchange="changeFilter()"> ★★ Special Illus. Rare
+                (Alt Art)</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='(rarity:"Ultra Rare" OR rarity:"*Full Art*")' checked onchange="changeFilter()"> ★★ Ultra
+                Rare (Full Art)</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='(rarity:"Illustration Rare" OR rarity:"Trainer Gallery*")' checked onchange="changeFilter()">
+                ★ Illustration Rare</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='(rarity:"Double Rare" OR rarity:"*EX*" OR rarity:"*GX*" OR rarity:"*V*" OR rarity:"*VMAX*" OR rarity:"*VSTAR*")'
+                    checked onchange="changeFilter()"> ★★ Double Rare (ex/V/GX)</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='(rarity:"Amazing Rare" OR rarity:"Radiant Rare" OR rarity:"*Shiny*")' checked
+                    onchange="changeFilter()"> Shiny / Radiant / Amazing</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb"
+                    value='(rarity:"Rare" OR rarity:"Rare Holo" OR rarity:"Rare Holo V")' onchange="changeFilter()"> ★
+                Rare (Holo/Regular)</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb" value='rarity:"Uncommon"'
+                    onchange="changeFilter()"> ◆ Uncommon</label>
+
+            <label class="checkbox-label"><input type="checkbox" class="rarity-cb" value='rarity:"Common"'
+                    onchange="changeFilter()"> ● Common</label>
+        </div>
+    </div>
+
+    <main id="pokedex" class="pokedex-grid" data-cy="pokedex-grid"></main>
+
+    <div class="pagination">
+        <div class="pagination-controls">
+            <button id="btn-prev" class="page-btn" data-cy="btn-prev" onclick="changePage(-1)">Previous</button>
+            <select id="page-jump" class="custom-select" data-cy="page-jump" onchange="jumpToPage(this.value)"></select>
+            <button id="btn-next" class="page-btn" data-cy="btn-next" onclick="changePage(1)">Next</button>
+        </div>
+
+        <div class="per-page-controls">
+            <label for="items-per-page">Items per page:</label>
+            <select id="items-per-page" class="custom-select" data-cy="items-per-page"
+                onchange="changeItemsPerPage(this.value)">
+                <option value="25" selected>25 Pokémon</option>
+                <option value="50">50 Pokémon</option>
+                <option value="100">100 Pokémon</option>
+            </select>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+
+</html>
