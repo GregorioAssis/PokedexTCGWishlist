@@ -333,136 +333,129 @@ async function getBase64ImageFromUrl(imageUrl) {
     });
 }
 
+// Substitua apenas a função exportToPDF no seu app.js
+
 async function exportToPDF() {
     const wishlist = getWishlist();
     const keys = Object.keys(wishlist).sort((a, b) => parseInt(a) - parseInt(b));
 
     if (keys.length === 0) {
-        alert("Your wishlist is empty.");
+        alert("Sua wishlist está vazia.");
         return;
     }
 
     const btnExport = document.querySelector('.export-btn');
     const originalText = btnExport.innerHTML;
-    btnExport.innerHTML = "⏳ Processing...";
-    btnExport.style.opacity = "0.7";
+    btnExport.innerHTML = "⏳ Gerando...";
     btnExport.disabled = true;
 
-    let exchangeRate = 0;
-    try {
-        const res = await fetch('https://economia.awesomeapi.com.br/last/USD-BRL');
-        const cotacaoData = await res.json();
-        exchangeRate = parseFloat(cotacaoData.USDBRL.bid);
-    } catch (error) {
-        console.error("Error fetching USD exchange rate:", error);
-    }
+    // Cores do site para o PDF
+    const colors = {
+        primary: [11, 22, 44],    // Deep Navy
+        highlight: [56, 189, 248], // Sky Blue
+        text: [30, 41, 59],       // Dark Slate
+        rowEven: [248, 250, 252],
+        rowOdd: [255, 255, 255]
+    };
 
     const { jsPDF } = window.jspdf;
     const doc = new jsPDF();
 
+    // Cabeçalho
+    doc.setFillColor(11, 14, 20); // Cor de fundo do site
+    doc.rect(0, 0, 210, 40, 'F');
+    
     doc.setFont("helvetica", "bold");
     doc.setFontSize(22);
-    doc.setTextColor(220, 38, 38); // Vermelho Pokémon
-    doc.text("Pokédex TCG Wishlist", 14, 20);
-    doc.setFontSize(11);
-    doc.setTextColor(100, 100, 100);
-    doc.setFont("helvetica", "normal");
-    doc.text(`Gerado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 28);
+    doc.setTextColor(255, 255, 255);
+    doc.text("Pokédex TCG Wishlist", 14, 25);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(148, 163, 184);
+    doc.text(`Exportado em: ${new Date().toLocaleDateString('pt-BR')}`, 14, 33);
 
-    let totalLowValueUSD = 0;
     const tableData = [];
     const imagesCache = [];
 
     for (const key of keys) {
         const item = wishlist[key];
-        const dexNum = `#${String(key).padStart(3, '0')}`;
-        
-        if (item.priceLowRaw) { totalLowValueUSD += item.priceLowRaw; }
-
         const base64Img = await getBase64ImageFromUrl(item.image);
         imagesCache.push(base64Img); 
 
         tableData.push({
-            dex: dexNum,
-            imagePlaceholder: "", 
-            card: `${item.cardName} (${item.cardNumber}/${item.setTotal})`,
+            dex: `#${String(key).padStart(3, '0')}`,
+            img: "", 
+            name: `${item.cardName}\n(${item.cardNumber}/${item.setTotal})`,
             set: item.set,
-            price: item.priceLow || 'N/A',
-            ligaLink: "Comprar / Ver"
+            price: item.priceLow || 'N/A'
         });
     }
 
     doc.autoTable({
-        startY: 35,
+        startY: 45,
         columns: [
-            { header: 'Dex', dataKey: 'dex' },
-            { header: 'Card', dataKey: 'imagePlaceholder' }, 
-            { header: 'Nome', dataKey: 'card' },
+            { header: 'ID', dataKey: 'dex' },
+            { header: 'Card', dataKey: 'img' },
+            { header: 'Nome da Carta (Link)', dataKey: 'name' },
             { header: 'Coleção', dataKey: 'set' },
-            { header: 'Min US', dataKey: 'price' },
-            { header: 'Liga Pokémon', dataKey: 'ligaLink' }
+            { header: 'Valor Min.', dataKey: 'price' }
         ],
         body: tableData,
         theme: 'grid',
-        headStyles: { fillColor: [30, 41, 59], textColor: 255, fontSize: 10, halign: 'center' }, 
-        styles: { font: 'helvetica', fontSize: 9, valign: 'middle', cellPadding: 4, lineColor: [226, 232, 240], lineWidth: 0.5 },
-        alternateRowStyles: { fillColor: [248, 250, 252] },
-        columnStyles: {
-            dex: { halign: 'center', fontStyle: 'bold' },
-            imagePlaceholder: { cellWidth: 22 }, 
-            price: { halign: 'right', fontStyle: 'bold', textColor: [22, 163, 74] }, 
-            ligaLink: { halign: 'center', textColor: [37, 99, 235], fontStyle: 'bold' } 
+        headStyles: { 
+            fillColor: [21, 28, 44], 
+            textColor: 255, 
+            fontSize: 10, 
+            halign: 'center',
+            cellPadding: 5
         },
-        bodyStyles: { minCellHeight: 28 }, 
+        styles: { 
+            valign: 'middle', 
+            fontSize: 9,
+            cellPadding: 4,
+            lineColor: [226, 232, 240]
+        },
+        columnStyles: {
+            dex: { cellWidth: 15, halign: 'center', fontStyle: 'bold' },
+            img: { cellWidth: 25 },
+            name: { textColor: [37, 99, 235], fontStyle: 'bold' }, // Estilo de link (azul)
+            price: { halign: 'right', textColor: [22, 163, 74], fontStyle: 'bold' }
+        },
         didDrawCell: function(data) {
-            if (data.column.dataKey === 'imagePlaceholder' && data.cell.section === 'body') {
+            // Desenha a imagem da carta
+            if (data.column.dataKey === 'img' && data.cell.section === 'body') {
                 const imgData = imagesCache[data.row.index];
                 if (imgData) {
-                    doc.addImage(imgData, 'JPEG', data.cell.x + 3, data.cell.y + 2, 15, 22);
+                    doc.addImage(imgData, 'JPEG', data.cell.x + 5, data.cell.y + 2, 15, 21);
                 }
             }
-            if (data.column.dataKey === 'ligaLink' && data.cell.section === 'body') {
+
+            // Injeta o Hyperlink na célula do Nome
+            if (data.column.dataKey === 'name' && data.cell.section === 'body') {
                 const itemKey = keys[data.row.index];
                 const item = wishlist[itemKey];
-                const itemUrl = item.ligaUrl || `https://www.ligapokemon.com.br/?view=cards/search&card=${encodeURIComponent(item.cardName)}`;
-                if (itemUrl) {
-                    doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: itemUrl });
+                if (item.ligaUrl) {
+                    doc.link(data.cell.x, data.cell.y, data.cell.width, data.cell.height, { url: item.ligaUrl });
                 }
             }
         }
     });
 
-    const finalY = doc.lastAutoTable.finalY || 35;
+    // Rodapé com Total
+    const finalY = doc.lastAutoTable.finalY + 15;
+    doc.setFontSize(12);
+    doc.setTextColor(30, 41, 59);
+    doc.setFont("helvetica", "bold");
     
-    doc.setFontSize(10);
-    doc.setFont("helvetica", "normal");
+    // Cálculo do total (simplificado para o exemplo)
+    let totalUSD = 0;
+    keys.forEach(k => { if(wishlist[k].priceLowRaw) totalUSD += wishlist[k].priceLowRaw; });
     
-    if (exchangeRate > 0) {
-        const totalBRL = totalLowValueUSD * exchangeRate;
-        doc.setTextColor(100, 100, 100);
-        doc.text(`Cotação Atual (USD -> BRL): ${formatBRL.format(exchangeRate)}`, 14, finalY + 12);
-        
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(30, 41, 59);
-        doc.text(`Total Estimado (Min US): ${formatUSD.format(totalLowValueUSD)}`, 14, finalY + 20);
-        
-        doc.setTextColor(22, 163, 74); 
-        doc.text(`Total Estimado (BRL): ${formatBRL.format(totalBRL)}`, 14, finalY + 28);
-    } else {
-        doc.setFontSize(12);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(30, 41, 59);
-        doc.text(`Total Estimado (Min US): ${formatUSD.format(totalLowValueUSD)}`, 14, finalY + 15);
-        doc.setFontSize(10);
-        doc.setTextColor(239, 68, 68); 
-        doc.text("Cotação BRL indisponível no momento.", 14, finalY + 22);
-    }
+    doc.text(`Total Estimado: ${formatUSD.format(totalUSD)}`, 14, finalY);
 
-    doc.save("wishlist-tcg.pdf");
+    doc.save("minha-pokedex-tcg.pdf");
 
     btnExport.innerHTML = originalText;
-    btnExport.style.opacity = "1";
     btnExport.disabled = false;
 }
 
