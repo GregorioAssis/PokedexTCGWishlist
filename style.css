@@ -224,11 +224,11 @@ body {
 .tcg-card-img:hover { filter: brightness(1); transform: scale(1.2) translateY(-5px); z-index: 2; box-shadow: 0 10px 20px rgba(0,0,0,0.6); }
 
 /* Info overlay when a card is selected */
-.selected-info { display: none; position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(9, 9, 11, 0.95); padding: 12px; box-sizing: border-box; border-radius: 0 0 11px 11px; font-size: 0.8rem; text-align: left; pointer-events: none; border-top: 1px solid var(--border-color); }
+.selected-info { display: none; position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(9, 9, 11, 0.95); padding: 12px; box-sizing: border-box; border-radius: 0 0 11px 11px; font-size: 0.8rem; text-align: left; pointer-events: auto; border-top: 1px solid var(--border-color); }
 .pokemon-card.has-selection:hover .selected-info { display: block; }
 .selected-info p { margin: 4px 0; color: var(--text-color); }
 .selected-info strong { color: var(--text-muted); }
-.price-tag { color: #4ade80 !important; font-weight: 600; } 
+.price-tag { color: #4ade80 !important; font-weight: 600; }
 
 /* Custom Scrollbar */
 .tcg-popup::-webkit-scrollbar { width: 6px; }
@@ -270,4 +270,24 @@ body {
     justify-content: center;
     width: 100%;
     padding: 20px;
+}
+
+/* Liga Pokémon Hyperlink in Selected Card */
+.liga-link {
+    display: inline-block;
+    margin-top: 8px;
+    color: #60a5fa;
+    text-decoration: none;
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: color 0.2s ease, transform 0.2s ease;
+    pointer-events: auto; /* <-- ESSA É A CORREÇÃO MÁGICA */
+    position: relative;
+    z-index: 10;
+}
+
+.liga-link:hover {
+    color: #93c5fd;
+    text-decoration: underline;
+    transform: translateX(2px);
 }
